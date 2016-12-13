@@ -5,12 +5,12 @@ stage.enableMouseOver(20);
 function init(gridsize){
     var width = stage.canvas.width / gridsize;
     var height = stage.canvas.height;
+    console.log(width, height);
     var gridLines = new createjs.Shape();
     gridLines.x = 0;
     gridLines.y = 0;
-    gridLines.graphics.setStrokeStyle(8);
-    gridLines.graphics.beginStroke("black");
-    stage.addChild(gridLines);
+    gridLines.graphics.setStrokeStyle(1);
+    gridLines.graphics.beginStroke("black").drawRect(0,0,stage.canvas.width, height);
     for (var i=0; i<gridsize; ++i){
         // columns
         var col = new createjs.Shape();
@@ -35,6 +35,7 @@ function init(gridsize){
         gridLines.graphics.moveTo(-0.5, xval).lineTo(height+0.5, xval);
     }
     gridLines.graphics.endStroke();
+    stage.addChild(gridLines);
     stage.update();
 }
 
