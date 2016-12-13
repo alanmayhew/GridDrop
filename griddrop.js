@@ -2,10 +2,12 @@ var stage = new createjs.Stage("mainCanvas");
 createjs.Touch.enable(stage);
 stage.enableMouseOver(20);
 
+var gameState = null;
+
 function init(gridsize){
+    // gameState = new Grid(gridsize);
     var width = stage.canvas.width / gridsize;
     var height = stage.canvas.height;
-    console.log(width, height);
     var gridLines = new createjs.Shape();
     gridLines.x = 0;
     gridLines.y = 0;
@@ -36,9 +38,13 @@ function init(gridsize){
     }
     gridLines.graphics.endStroke();
     stage.addChild(gridLines);
-    stage.update();
 }
 
+function canClick(){
+    // return true if the user can click on stuff
+    // (eventually check the state of the Grid object)
+    return true;
+}
 
 function gridMouseOver(event){
     var target = event.target;
@@ -51,6 +57,7 @@ function gridMouseOut(event){
 }
 
 function gridClick(event){
+    if (!canClick()) return;
     var target = event.target;
     console.log("clicked column:",target.col_id);
 }
