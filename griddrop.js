@@ -1,35 +1,60 @@
 var stage = new createjs.Stage("mainCanvas");
-var cols = [];
+createjs.Touch.enable(stage);
+stage.enableMouseOver(20);
+
 function init(gridsize){
     var width = stage.canvas.width / gridsize;
     var height = stage.canvas.height;
     for (var i=0; i<gridsize; ++i){
         var col = new createjs.Shape();
-        col.graphics.beginFill("rgba(130,130,130,0.5)").drawRect(0, 0, width, height);
+        col.baseColor = "#eee";
+        col.overColor = "#ccc";
+        col.clickColor = "#999";
+        col.graphics.beginFill(col.baseColor).drawRect(0, 0, width, height).endFill();
+        col.width = width;
+        col.height = height;
         col.x = i*width;
-        console.log(col.x);
         col.y = 0;
-        cols.push(col);
+        // col.onMouseOver = gridMouseOver;
+        // col.onMouseOut = gridMouseOut;
+        col.addEventListener("mouseover", gridMouseOver);
+        col.addEventListener("mouseout", gridMouseOut);
+        col.addEventListener("click", gridMouseClick);
+        console.log(col);
         stage.addChild(col);
     }
     stage.update();
 
-    document.onkeydown = handleKeyDown;
-    document.onkeyup = handleKeyUp;
-    document.onmousedown = handleKeyDown;
-    document.onmouseup = handleKeyUp;
+    // document.onkeydown = handleKeyDown;
+    // document.onkeyup = handleKeyUp;
 }
 
-function handleKeyDown(e){
 
+function gridMouseOver(event){
+    var target = event.target;
+    target.graphics.clear().beginFill(target.overColor).drawRect(0, 0, target.width, target.height).endFill();
 }
 
-function handleKeyUp(e){
-
+function gridMouseOut(event){
+    var target = event.target;
+    target.graphics.clear().beginFill(target.baseColor).drawRect(0, 0, target.width, target.height).endFill();
 }
 
-// createjs.Ticker.setFPS(30);
-// createjs.Ticker.addEventListener("tick", handleTick);
-// function handleTick(e){
-//     stage.update();
+function gridMouseClick(event){
+    var target = event.target;
+    target.graphics.clear().beginFill(target.clickColor).drawRect(0, 0, target.width, target.height).endFill();
+}
+
+// function handleKeyDown(event){
+// 
 // }
+// 
+// function handleKeyUp(event){
+// 
+// }
+
+createjs.Ticker.setFPS(30);
+createjs.Ticker.addEventListener("tick", handleTick);
+function handleTick(event){
+    stage.update();
+}
