@@ -5,7 +5,14 @@ stage.enableMouseOver(20);
 function init(gridsize){
     var width = stage.canvas.width / gridsize;
     var height = stage.canvas.height;
+    var gridLines = new createjs.Shape();
+    gridLines.x = 0;
+    gridLines.y = 0;
+    gridLines.graphics.setStrokeStyle(8);
+    gridLines.graphics.beginStroke("black");
+    stage.addChild(gridLines);
     for (var i=0; i<gridsize; ++i){
+        // columns
         var col = new createjs.Shape();
         col.baseColor = "#eee";
         col.overColor = "#ccc";
@@ -13,20 +20,22 @@ function init(gridsize){
         col.graphics.beginFill(col.baseColor).drawRect(0, 0, width, height).endFill();
         col.width = width;
         col.height = height;
+        col.col_id = i;
         col.x = i*width;
         col.y = 0;
-        // col.onMouseOver = gridMouseOver;
-        // col.onMouseOut = gridMouseOut;
         col.addEventListener("mouseover", gridMouseOver);
         col.addEventListener("mouseout", gridMouseOut);
-        col.addEventListener("click", gridMouseClick);
-        console.log(col);
+        col.addEventListener("click", gridClick);
         stage.addChild(col);
-    }
-    stage.update();
 
-    // document.onkeydown = handleKeyDown;
-    // document.onkeyup = handleKeyUp;
+        // borders
+        if (i == 0) continue;
+        var xval = i*width - 0.5;
+        gridLines.graphics.moveTo(xval, -0.5).lineTo(xval, height+0.5);
+        gridLines.graphics.moveTo(-0.5, xval).lineTo(height+0.5, xval);
+    }
+    gridLines.graphics.endStroke();
+    stage.update();
 }
 
 
@@ -40,18 +49,10 @@ function gridMouseOut(event){
     target.graphics.clear().beginFill(target.baseColor).drawRect(0, 0, target.width, target.height).endFill();
 }
 
-function gridMouseClick(event){
+function gridClick(event){
     var target = event.target;
-    target.graphics.clear().beginFill(target.clickColor).drawRect(0, 0, target.width, target.height).endFill();
+    console.log("clicked column:",target.col_id);
 }
-
-// function handleKeyDown(event){
-// 
-// }
-// 
-// function handleKeyUp(event){
-// 
-// }
 
 createjs.Ticker.setFPS(30);
 createjs.Ticker.addEventListener("tick", handleTick);
