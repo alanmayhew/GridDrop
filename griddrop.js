@@ -67,17 +67,23 @@ function gridMouseOut(event){
 function gridClick(event){
     if (!canClick()) return;
     var col = event.target.col_id;
-    console.log("clicked column:",col);
     var newPiece = generatePiece(nextPieceNumber);
     var row = gameState.dropInColumn(col,newPiece);
     if (row == -1){
-        // TODO handle error
+        return;
     }
     var squareDim = stage.canvas.width / gridSize;
-    var text = new createjs.Text(newPiece.numberVal.toString(),"20px Arial", "#fff");
     var circle = new createjs.Shape();
-    var radius = squareDim / 2;
-    circle.graphics.beginFill("#f00").drawCircle(radius/2, radius/2, radius).endFill();
+    var offset = squareDim / 2;
+    var radius = offset * 0.9;
+    circle.graphics.beginFill("#f00").drawCircle(0, 0, radius).endFill();
+    circle.x = offset;
+    circle.y = offset;
+    // TODO dynamic font size
+    var text = new createjs.Text(newPiece.numberVal.toString(),"40px Arial", "#fff");
+    var b = text.getBounds();
+    text.x = offset - b.width/2;
+    text.y = offset - b.height/2;
     newPiece.addChild(circle, text);
     newPiece.x = col*squareDim;
     newPiece.y = (gridSize-row-1)*squareDim;
@@ -86,9 +92,11 @@ function gridClick(event){
 
 function handleKeyDown(event){
     var kc = event.keyCode;
-    if (kc == 71){
-        gameState.findAndRemoveGroups(stage);
+    if (kc == 71){ // g
+        var removed = gameState.findAndRemoveGroups(stage);
+        console.log("%d removed", removed);
     }
+    // number keys 1-9
     var num = kc - 48;
     if (1 <= num && num <= 9 && num <= gridSize){
         nextPieceNumber = num;

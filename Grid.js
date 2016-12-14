@@ -12,7 +12,7 @@
  |   | 4 |   |   |         2  [ ]
  +---+---+---+---+
  | 3 | 1 |   | 2 |         3  [ {2} ]
- +---+---+---+---+                                        ]
+ +---+---+---+---+                         ]
  
 - Grid.columns goes left (low index) to right (high).
 - Columns are a stack of objects where lower index
@@ -31,11 +31,9 @@ function Grid(dim){
 // attempts to drop the piece in
 // returns row it landed on (or -1 if it couldn't fit)
 Grid.prototype.dropInColumn = function(col_num, piece){
-    console.log(this.columns);
     var col = this.columns[col_num];
     if (col.length >= this.dim) return -1;
     col.push(piece);
-    console.log(this.columns);
     return col.length-1;
 }
 
@@ -60,15 +58,14 @@ Grid.prototype.findAndRemoveGroups = function(stage){
             }
         }
     }
-
     // row checking
     var topRow = Math.max.apply(Math, lengthList);
     for (var r=0; r<topRow; ++r){
         var groupVals = [];
-        for (var c=0; r<this.dim; ++c){
+        for (var c=0; c<this.dim; ++c){
             var col = this.columns[c];
             cell = null;
-            if (lengthList[c] < r){
+            if (lengthList[c] > r){
                 cell = col[r];
                 groupVals.push(cell.numberVal);
             }
