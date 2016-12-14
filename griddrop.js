@@ -4,6 +4,10 @@ stage.enableMouseOver(20);
 
 var gameState = null;
 
+// TODO: eventually grid should probably go in a Container
+//  so that it can be its own element with stuff above
+//  for score, next piece to drop, etc...
+
 function init(gridsize){
     // gameState = new Grid(gridsize);
     var width = stage.canvas.width / gridsize;

@@ -29,32 +29,34 @@ function Grid(dim){
     // this.tops = new Array(dim);
     // this.tops.fill(0);
 }
+
 // attempts to drop the piece in
 // returns whether or not the piece could be successfully dropped
-Grid.prototype.dropInColumn = function(col_num, dot){
+Grid.prototype.dropInColumn = function(col_num, piece){
     // find the slot
     var col = this.columns[col_num];
     var cell = col[0];
-    var i = 0;
-    while (cell == null && i < this.dim){
-        cell = col[++i];
+    var i = this.dim-1;
+    while (cell != null && i >= 0){
+        cell = col[--i];
     }
-    if (i >= this.dim){
+    if (i < 0){
         return false;
     }
     // drop it
-    this.columns[col_num][i] = dot;
+    this.columns[col_num][i] = piece;
     return true;
 }
 
 // returns the number of groups removed
-Grid.prototype.findAndRemoveGroups = function(){
+Grid.prototype.findAndRemoveGroups = function(stage){
     var groupVals = [];
     var cell = null;
     var row = 0;
     var col = 0;
     var matchingCells = [];
-    // loop through rows and columns
+    var numRemoved = 0;
+    // loop through rows and columns (horizontally and vertically)
     for (var direction=0; direction<2; ++direction){
         for (var i=0; i<this.dim; ++i){
             groupVals = [];
@@ -85,6 +87,17 @@ Grid.prototype.findAndRemoveGroups = function(){
             }
         } 
     }
+    // TODO: make sure cell isn't null before clearing it (cells can
+    // potentially be "marked" twice)
+    for (var i=0; i<matchingCells.length; ++i){
+        var col = matchingCells[i][0];
+        var row = matchingCells[i][1];
+        cell = this.columns[col][row];
+        if (cell == null) continue;
+        stage.removeChild(cell);
+        ++numRemoved;
+    }
+    return numRemoved;
 }
 
 Grid.prototype.gravity = function(){
