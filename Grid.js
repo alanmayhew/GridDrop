@@ -21,18 +21,22 @@
  */
 
 function Grid(dim){
-    this.columns = new Array(dim);
-    this.columns.fill([]);
     this.dim = dim;
+    this.columns = [];
+    for (var i=0; i<dim; ++i){
+        this.columns.push([]);
+    }
 }
 
 // attempts to drop the piece in
-// returns whether or not the piece could be successfully dropped
+// returns row it landed on (or -1 if it couldn't fit)
 Grid.prototype.dropInColumn = function(col_num, piece){
+    console.log(this.columns);
     var col = this.columns[col_num];
-    if (col.length >= dim) return false;
+    if (col.length >= this.dim) return -1;
     col.push(piece);
-    return true;
+    console.log(this.columns);
+    return col.length-1;
 }
 
 // returns the number of groups removed
@@ -66,7 +70,7 @@ Grid.prototype.findAndRemoveGroups = function(stage){
             cell = null;
             if (lengthList[c] < r){
                 cell = col[r];
-                groupVals.push(cell.numberValue);
+                groupVals.push(cell.numberVal);
             }
             // if we just found the end of a group (or hit the end of the
             // board, check the group and flag for removal)

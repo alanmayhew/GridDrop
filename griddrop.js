@@ -3,21 +3,24 @@ createjs.Touch.enable(stage);
 stage.enableMouseOver(20);
 
 var gameState = null;
+var gridSize = -1;
+var nextPieceNumber = 1;
 
-// TODO: eventually grid should probably go in a Container
-//  so that it can be its own element with stuff above
+// TODO: eventually grid graphics should probably go in a Container so that it
+//  can be its own element with stuff above
 //  for score, next piece to drop, etc...
 
-function init(gridsize){
-    // gameState = new Grid(gridsize);
-    var width = stage.canvas.width / gridsize;
+function init(gridSizeIn){
+    gridSize = gridSizeIn;
+    gameState = new Grid(gridSize);
+    var width = stage.canvas.width / gridSize;
     var height = stage.canvas.height;
     var gridLines = new createjs.Shape();
     gridLines.x = 0;
     gridLines.y = 0;
     gridLines.graphics.setStrokeStyle(1);
     gridLines.graphics.beginStroke("black").drawRect(0,0,stage.canvas.width, height);
-    for (var i=0; i<gridsize; ++i){
+    for (var i=0; i<gridSize; ++i){
         // columns
         var col = new createjs.Shape();
         col.baseColor = "#eee";
@@ -42,6 +45,7 @@ function init(gridsize){
     }
     gridLines.graphics.endStroke();
     stage.addChild(gridLines);
+    document.addEventListener("keydown", handleKeyDown);
 }
 
 function canClick(){
@@ -62,8 +66,39 @@ function gridMouseOut(event){
 
 function gridClick(event){
     if (!canClick()) return;
-    var target = event.target;
-    console.log("clicked column:",target.col_id);
+    var col = event.target.col_id;
+    console.log("clicked column:",col);
+    var newPiece = generatePiece(nextPieceNumber);
+    var row = gameState.dropInColumn(col,newPiece);
+    if (row == -1){
+        // TODO handle error
+    }
+    var squareDim = stage.canvas.width / gridSize;
+    var text = new createjs.Text(newPiece.numberVal.toString(),"20px Arial", "#fff");
+    var circle = new createjs.Shape();
+    var radius = squareDim / 2;
+    circle.graphics.beginFill("#f00").drawCircle(radius/2, radius/2, radius).endFill();
+    newPiece.addChild(circle, text);
+    newPiece.x = col*squareDim;
+    newPiece.y = (gridSize-row-1)*squareDim;
+    stage.addChild(newPiece);
+}
+
+function handleKeyDown(event){
+    var kc = event.keyCode;
+    if (kc == 71){
+        gameState.findAndRemoveGroups(stage);
+    }
+    var num = kc - 48;
+    if (1 <= num && num <= 9 && num <= gridSize){
+        nextPieceNumber = num;
+    }
+}
+
+function generatePiece(number){
+    var piece = new createjs.Container();
+    piece.numberVal = number;
+    return piece;
 }
 
 createjs.Ticker.setFPS(30);
