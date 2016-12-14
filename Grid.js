@@ -38,7 +38,7 @@ Grid.prototype.dropInColumn = function(col_num, piece){
 }
 
 // returns the number of groups removed
-Grid.prototype.findAndRemoveGroups = function(stage){
+Grid.prototype.findAndRemoveGroups = function(piecesContainer){
     var numRemoved = 0;
     var matchingCells = [];
     var cell = null;
@@ -97,7 +97,7 @@ Grid.prototype.findAndRemoveGroups = function(stage){
         var col = Math.floor(val/this.dim);
         var row = val % this.dim;
         cell = this.columns[col][row];
-        stage.removeChild(cell);
+        piecesContainer.removeChild(cell);
         this.columns[col].splice(row,1);
         ++numRemoved;
     }

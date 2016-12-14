@@ -3,48 +3,67 @@ createjs.Touch.enable(stage);
 stage.enableMouseOver(20);
 
 var gameState = null;
+var gridDim = -1;
 var gridSize = -1;
 var nextPieceNumber = 1;
+var piecesContainer = null;
+
+const TOPBAR_PERCENT = 0.15;
 
 // TODO: eventually grid graphics should probably go in a Container so that it
 //  can be its own element with stuff above
 //  for score, next piece to drop, etc...
 
-function init(gridSizeIn){
-    gridSize = gridSizeIn;
-    gameState = new Grid(gridSize);
-    var width = stage.canvas.width / gridSize;
-    var height = stage.canvas.height;
+function init(gridDimIn){
+    gridDim = gridDimIn;
+    gameState = new Grid(gridDim);
+
+    var canvasWidth = stage.canvas.width;
+    var canvasHeight = stage.canvas.height;
+    var gridOffset = canvasHeight * TOPBAR_PERCENT;
+    gridSize = canvasHeight - gridOffset;
+
+    var rectWidth = gridSize / gridDim;
+    var rectHeight = gridSize;
+
+    var gridContainer = new createjs.Container();
+    gridContainer.x = 0;
+    gridContainer.y = gridOffset;
+    piecesContainer = new createjs.Container();
+    piecesContainer.x = 0;
+    piecesContainer.y = gridOffset;
     var gridLines = new createjs.Shape();
     gridLines.x = 0;
     gridLines.y = 0;
     gridLines.graphics.setStrokeStyle(1);
-    gridLines.graphics.beginStroke("black").drawRect(0,0,stage.canvas.width, height);
-    for (var i=0; i<gridSize; ++i){
+    gridLines.graphics.beginStroke("black").drawRect(0,0, gridSize, gridSize);
+    for (var i=0; i<gridDim; ++i){
         // columns
         var col = new createjs.Shape();
         col.baseColor = "#eee";
         col.overColor = "#ccc";
         col.clickColor = "#999";
-        col.graphics.beginFill(col.baseColor).drawRect(0, 0, width, height).endFill();
-        col.width = width;
-        col.height = height;
+        col.graphics.beginFill(col.baseColor).drawRect(0, 0, rectWidth, rectHeight).endFill();
+        col.width = rectWidth;
+        col.height = rectHeight;
         col.col_id = i;
-        col.x = i*width;
+        col.x = i*rectWidth;
         col.y = 0;
         col.addEventListener("mouseover", gridMouseOver);
         col.addEventListener("mouseout", gridMouseOut);
         col.addEventListener("click", gridClick);
-        stage.addChild(col);
+        gridContainer.addChild(col);
 
         // borders
         if (i == 0) continue;
-        var xval = i*width - 0.5;
-        gridLines.graphics.moveTo(xval, -0.5).lineTo(xval, height+0.5);
-        gridLines.graphics.moveTo(-0.5, xval).lineTo(height+0.5, xval);
+        var xval = i*rectWidth - 0.5;
+        gridLines.graphics.moveTo(xval, -0.5).lineTo(xval, rectHeight+0.5);
+        gridLines.graphics.moveTo(-0.5, xval).lineTo(rectHeight+0.5, xval);
     }
     gridLines.graphics.endStroke();
-    stage.addChild(gridLines);
+    gridContainer.addChild(gridLines);
+    stage.addChild(gridContainer);
+    stage.addChild(piecesContainer);
     document.addEventListener("keydown", handleKeyDown);
 }
 
@@ -72,7 +91,7 @@ function gridClick(event){
     if (row == -1){
         return;
     }
-    var squareDim = stage.canvas.width / gridSize;
+    var squareDim = gridSize / gridDim;
     var circle = new createjs.Shape();
     var offset = squareDim / 2;
     var radius = offset * 0.9;
@@ -86,19 +105,19 @@ function gridClick(event){
     text.y = offset - b.height/2;
     newPiece.addChild(circle, text);
     newPiece.x = col*squareDim;
-    newPiece.y = (gridSize-row-1)*squareDim;
-    stage.addChild(newPiece);
+    newPiece.y = (gridDim-row-1)*squareDim;
+    piecesContainer.addChild(newPiece);
 }
 
 function handleKeyDown(event){
     var kc = event.keyCode;
     if (kc == 71){ // g
-        var removed = gameState.findAndRemoveGroups(stage);
+        var removed = gameState.findAndRemoveGroups(piecesContainer);
         console.log("%d removed", removed);
     }
     // number keys 1-9
     var num = kc - 48;
-    if (1 <= num && num <= 9 && num <= gridSize){
+    if (1 <= num && num <= 9 && num <= gridDim){
         nextPieceNumber = num;
     }
 }
