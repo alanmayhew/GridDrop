@@ -104,7 +104,8 @@ Grid.prototype.findAndRemoveGroups = function(piecesContainer){
     return numRemoved;
 }
 
-Grid.prototype.gravity = function(){
+Grid.prototype.updateShapes = function(squareDim){
+    // TODO this
 }
 
 Grid.prototype.update = function(){

@@ -5,18 +5,22 @@ stage.enableMouseOver(20);
 var gameState = null;
 var gridDim = -1;
 var gridSize = -1;
-var nextPieceNumber = 1;
 var nextPiece = null;
 var piecesContainer = null;
 var interfaceContainer = null;
 var score = 0;
 var scoreText = null;
+var hueList = [];
 
 const TOPBAR_PERCENT = 0.15;
 
 function init(gridDimIn){
     gridDim = gridDimIn;
     gameState = new Grid(gridDim);
+
+    for (var i=0; i<gridDim;  ++i){
+        hueList.push(Math.floor(360 / gridDim * i));
+    }
 
     var canvasWidth = stage.canvas.width;
     var canvasHeight = stage.canvas.height;
@@ -74,7 +78,7 @@ function init(gridDimIn){
         gridLines.graphics.moveTo(-0.5, xval).lineTo(rectHeight+0.5, xval);
     }
     gridLines.graphics.endStroke();
-    nextPiece = generatePiece(nextPieceNumber, rectWidth);
+    nextPiece = generateRandomPiece(rectWidth);
     nextPiece.x = rectWidth * (gridDim - 1);
     nextPiece.y = 0;
     gridContainer.addChild(gridLines);
@@ -94,6 +98,10 @@ function canClick(){
 function gridMouseOver(event){
     var target = event.target;
     target.graphics.clear().beginFill(target.overColor).drawRect(0, 0, target.width, target.height).endFill();
+    if (nextPiece != null){
+        var col = target.col_id;
+        nextPiece.x = col * gridSize / gridDim;
+    }
 }
 
 function gridMouseOut(event){
@@ -115,7 +123,7 @@ function gridClick(event){
     nextPiece.x = col * squareDim;
     nextPiece.y = (gridDim-row-1)*squareDim;
     piecesContainer.addChild(nextPiece);
-    nextPiece = generatePiece(nextPieceNumber, squareDim);
+    nextPiece = generateRandomPiece(squareDim);
     nextPiece.x = nx;
     nextPiece.y = ny;
     stage.addChild(nextPiece);
@@ -128,11 +136,11 @@ function handleKeyDown(event){
         console.log("%d removed", removed);
         score += removed;
     }
-    // number keys 1-9
-    var num = kc - 48;
-    if (1 <= num && num <= 9 && num <= gridDim){
-        nextPieceNumber = num;
-    }
+}
+
+function generateRandomPiece(squareDim){
+    randomPieceNumber = Math.floor(Math.random() * gridDim)+1;
+    return generatePiece(randomPieceNumber, squareDim);
 }
 
 function generatePiece(number, squareDim){
@@ -141,7 +149,8 @@ function generatePiece(number, squareDim){
     var circle = new createjs.Shape();
     var offset = squareDim / 2;
     var radius = offset * 0.9;
-    circle.graphics.beginFill("#f00").drawCircle(0, 0, radius).endFill();
+    var color = "hsl(" + hueList[number-1].toString() + ", 100%, 50%)";
+    circle.graphics.beginFill(color).drawCircle(0, 0, radius).endFill();
     circle.x = offset;
     circle.y = offset;
     // TODO dynamic font size
