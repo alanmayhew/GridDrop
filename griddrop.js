@@ -6,13 +6,13 @@ var gameState = null;
 var gridDim = -1;
 var gridSize = -1;
 var nextPieceNumber = 1;
+var nextPiece = null;
 var piecesContainer = null;
+var interfaceContainer = null;
+var score = 0;
+var scoreText = null;
 
 const TOPBAR_PERCENT = 0.15;
-
-// TODO: eventually grid graphics should probably go in a Container so that it
-//  can be its own element with stuff above
-//  for score, next piece to drop, etc...
 
 function init(gridDimIn){
     gridDim = gridDimIn;
@@ -26,6 +26,19 @@ function init(gridDimIn){
     var rectWidth = gridSize / gridDim;
     var rectHeight = gridSize;
 
+    var interfaceContainer = new createjs.Container();
+    interfaceContainer.x = 0;
+    interfaceContainer.y = 0;
+    // TODO: dynamic font size
+    scoreText = new createjs.Text("Score: ","20px Arial", "#000");
+    scoreText.x = 0;
+    scoreText.y = 0;
+    interfaceContainer.addChild(scoreText);
+    var numOffset = scoreText.getBounds().width;
+    scoreText = new createjs.Text("","20px Arial", "#000");
+    scoreText.x = numOffset;
+    scoreText.y = 0;
+    interfaceContainer.addChild(scoreText);
     var gridContainer = new createjs.Container();
     gridContainer.x = 0;
     gridContainer.y = gridOffset;
@@ -61,8 +74,10 @@ function init(gridDimIn){
         gridLines.graphics.moveTo(-0.5, xval).lineTo(rectHeight+0.5, xval);
     }
     gridLines.graphics.endStroke();
+    // TODO: call generate piece function, add to stage
     gridContainer.addChild(gridLines);
     stage.addChild(gridContainer);
+    stage.addChild(interfaceContainer);
     stage.addChild(piecesContainer);
     document.addEventListener("keydown", handleKeyDown);
 }
@@ -114,6 +129,7 @@ function handleKeyDown(event){
     if (kc == 71){ // g
         var removed = gameState.findAndRemoveGroups(piecesContainer);
         console.log("%d removed", removed);
+        score += removed;
     }
     // number keys 1-9
     var num = kc - 48;
@@ -122,7 +138,7 @@ function handleKeyDown(event){
     }
 }
 
-function generatePiece(number){
+function generatePiece(number, squareDim){
     var piece = new createjs.Container();
     piece.numberVal = number;
     return piece;
@@ -131,5 +147,6 @@ function generatePiece(number){
 createjs.Ticker.setFPS(30);
 createjs.Ticker.addEventListener("tick", handleTick);
 function handleTick(event){
+    scoreText.text = score.toString();
     stage.update();
 }
