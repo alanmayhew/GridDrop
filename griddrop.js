@@ -123,6 +123,12 @@ function gridClick(event){
     nextPiece.x = col * squareDim;
     nextPiece.y = (gridDim-row-1)*squareDim;
     piecesContainer.addChild(nextPiece);
+    nextPiece = null;
+    var removed = gameState.findAndRemoveGroups(piecesContainer);
+    score += removed;
+    if (removed != 0){
+        gameState.updatePieceHeights(squareDim);
+    }
     nextPiece = generateRandomPiece(squareDim);
     nextPiece.x = nx;
     nextPiece.y = ny;

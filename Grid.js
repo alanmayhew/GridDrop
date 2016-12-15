@@ -104,8 +104,21 @@ Grid.prototype.findAndRemoveGroups = function(piecesContainer){
     return numRemoved;
 }
 
-Grid.prototype.updateShapes = function(squareDim){
-    // TODO this
+Grid.prototype.updatePieceHeights = function(squareDim){
+    var numFell = 0;
+    for (var c=0; c<this.dim; ++c){
+        var col = this.columns[c];
+        for (var r=0; r<col.length; ++r){
+            var cell = col[r];
+            // cell.y = squareDim * (this.dim - r - 1);
+            var newY = squareDim * (this.dim - r - 1); 
+            if (cell.y != newY){
+                ++numFell;
+            }
+            cell.y = newY;
+        }
+    }
+    console.log("%d fell", numFell);
 }
 
 Grid.prototype.update = function(){
