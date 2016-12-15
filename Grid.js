@@ -52,7 +52,7 @@ Grid.prototype.findAndRemoveGroups = function(piecesContainer){
         lengthList.push(len);
         for (var r=0; r<len; ++r){
             cell = col[r];
-            if (cell.numberVal == len){
+            if (cell.numberValue == len){
                 // matchingCells.push([c,r]);
                 matchingCells.push(c*this.dim + r);
             }
@@ -67,7 +67,7 @@ Grid.prototype.findAndRemoveGroups = function(piecesContainer){
             cell = null;
             if (lengthList[c] > r){
                 cell = col[r];
-                groupVals.push(cell.numberVal);
+                groupVals.push(cell.numberValue);
             }
             // if we just found the end of a group (or hit the end of the
             // board, check the group and flag for removal)

@@ -74,10 +74,13 @@ function init(gridDimIn){
         gridLines.graphics.moveTo(-0.5, xval).lineTo(rectHeight+0.5, xval);
     }
     gridLines.graphics.endStroke();
-    // TODO: call generate piece function, add to stage
+    nextPiece = generatePiece(nextPieceNumber, rectWidth);
+    nextPiece.x = rectWidth * (gridDim - 1);
+    nextPiece.y = 0;
     gridContainer.addChild(gridLines);
     stage.addChild(gridContainer);
     stage.addChild(interfaceContainer);
+    stage.addChild(nextPiece);
     stage.addChild(piecesContainer);
     document.addEventListener("keydown", handleKeyDown);
 }
@@ -85,7 +88,7 @@ function init(gridDimIn){
 function canClick(){
     // return true if the user can click on stuff
     // (eventually check the state of the Grid object)
-    return true;
+    return nextPiece != null;
 }
 
 function gridMouseOver(event){
@@ -101,27 +104,21 @@ function gridMouseOut(event){
 function gridClick(event){
     if (!canClick()) return;
     var col = event.target.col_id;
-    var newPiece = generatePiece(nextPieceNumber);
-    var row = gameState.dropInColumn(col,newPiece);
+    var row = gameState.dropInColumn(col,nextPiece);
     if (row == -1){
         return;
     }
     var squareDim = gridSize / gridDim;
-    var circle = new createjs.Shape();
-    var offset = squareDim / 2;
-    var radius = offset * 0.9;
-    circle.graphics.beginFill("#f00").drawCircle(0, 0, radius).endFill();
-    circle.x = offset;
-    circle.y = offset;
-    // TODO dynamic font size
-    var text = new createjs.Text(newPiece.numberVal.toString(),"40px Arial", "#fff");
-    var b = text.getBounds();
-    text.x = offset - b.width/2;
-    text.y = offset - b.height/2;
-    newPiece.addChild(circle, text);
-    newPiece.x = col*squareDim;
-    newPiece.y = (gridDim-row-1)*squareDim;
-    piecesContainer.addChild(newPiece);
+    var nx = nextPiece.x;
+    var ny = nextPiece.y;
+    stage.removeChild(nextPiece);
+    nextPiece.x = col * squareDim;
+    nextPiece.y = (gridDim-row-1)*squareDim;
+    piecesContainer.addChild(nextPiece);
+    nextPiece = generatePiece(nextPieceNumber, squareDim);
+    nextPiece.x = nx;
+    nextPiece.y = ny;
+    stage.addChild(nextPiece);
 }
 
 function handleKeyDown(event){
@@ -139,9 +136,21 @@ function handleKeyDown(event){
 }
 
 function generatePiece(number, squareDim){
-    var piece = new createjs.Container();
-    piece.numberVal = number;
-    return piece;
+    var newPiece = new createjs.Container();
+    newPiece.numberValue = number;
+    var circle = new createjs.Shape();
+    var offset = squareDim / 2;
+    var radius = offset * 0.9;
+    circle.graphics.beginFill("#f00").drawCircle(0, 0, radius).endFill();
+    circle.x = offset;
+    circle.y = offset;
+    // TODO dynamic font size
+    var text = new createjs.Text(number.toString(),"40px Arial", "#fff");
+    var b = text.getBounds();
+    text.x = offset - b.width/2;
+    text.y = offset - b.height/2;
+    newPiece.addChild(circle, text);
+    return newPiece;
 }
 
 createjs.Ticker.setFPS(30);
