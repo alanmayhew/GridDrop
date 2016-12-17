@@ -117,14 +117,15 @@ Grid.prototype.updatePieceHeights = function(squareDim){
             }
             // cell.y = newY;
             // createjs.Tween.get(cell).to({y: newY}, 300, createjs.Ease.getElasticOut(20,50));
-            this.animateFall(cell, {y:newY});
+            this.animateFall(cell, {y:newY}, 300);
         }
     }
     console.log("%d fell", numFell);
+    return numFell;
 }
 
-Grid.prototype.animateFall = function(piece, destObj){
-    createjs.Tween.get(piece).to(destObj, 300, createjs.Ease.getElasticOut(40, 100));
+Grid.prototype.animateFall = function(piece, destObj, time){
+    createjs.Tween.get(piece).to(destObj, time, createjs.Ease.getElasticOut(40, 100));
 }
 
 Grid.prototype.update = function(){

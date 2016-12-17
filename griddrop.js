@@ -11,6 +11,7 @@ var interfaceContainer = null;
 var score = 0;
 var scoreText = null;
 var hueList = [];
+var clickLock = false;
 
 const TOPBAR_PERCENT = 0.15;
 
@@ -87,12 +88,13 @@ function init(gridDimIn){
     stage.addChild(nextPiece);
     stage.addChild(piecesContainer);
     document.addEventListener("keydown", handleKeyDown);
+    createjs.Ticker.setFPS(30);
+    createjs.Ticker.addEventListener("tick", handleTick);
 }
 
 function canClick(){
     // return true if the user can click on stuff
-    // (eventually check the state of the Grid object)
-    return nextPiece != null;
+    return !clickLock;
 }
 
 function gridMouseOver(event){
@@ -111,9 +113,11 @@ function gridMouseOut(event){
 
 function gridClick(event){
     if (!canClick()) return;
+    clickLock = true;
     var col = event.target.col_id;
     var row = gameState.dropInColumn(col,nextPiece);
     if (row == -1){
+        clickLock = false;
         return;
     }
     var squareDim = gridSize / gridDim;
@@ -123,28 +127,50 @@ function gridClick(event){
     nextPiece.x = col * squareDim;
     // nextPiece.y = (gridDim-row-1)*squareDim;
     piecesContainer.addChild(nextPiece);
-    gameState.animateFall(nextPiece, {y:(gridDim-row-1)*squareDim});
-    nextPiece = null;
-    var removed = 1;
-    var mult = 1;
-    while (removed != 0){
-        removed = gameState.findAndRemoveGroups(piecesContainer);
-        score += removed * (mult++);
-    }
-    gameState.updatePieceHeights(squareDim);
+    gameState.animateFall(nextPiece, {y:(gridDim-row-1)*squareDim}, 300);
+    setTimeout(clearMatches, 300, 1);
+    // nextPiece = null;
+    // var removed = 1;
+    // var mult = 1;
+    // while (removed != 0){
+    //     removed = gameState.findAndRemoveGroups(piecesContainer);
+    //     score += removed * (mult++);
+    // }
+    // gameState.updatePieceHeights(squareDim);
     nextPiece = generateRandomPiece(squareDim);
     nextPiece.x = nx;
     nextPiece.y = ny;
     stage.addChild(nextPiece);
+    // clickLock = false;
+}
+
+/*
+ * we're done if:
+ *  - nothing was removed
+ *  - something was removed but nothing fell
+ *
+ * if we're not done: (i.e. if something fell)
+ *  - call a delayed version of this function again
+ */
+function clearMatches(mult){
+    var removed = gameState.findAndRemoveGroups(piecesContainer);
+    score += removed * (mult++);
+    if (removed == 0){
+        clickLock = false;
+        return;
+    }
+    var fell = gameState.updatePieceHeights(gridSize/gridDim);
+    if (fell == 0){
+        clickLock = false;
+        return;
+    } else {
+        // give the pieces time to fall, and then do this again
+        setTimeout(clearMatches, 300, mult);
+    }
 }
 
 function handleKeyDown(event){
     var kc = event.keyCode;
-    if (kc == 71){ // g
-        var removed = gameState.findAndRemoveGroups(piecesContainer);
-        console.log("%d removed", removed);
-        score += removed;
-    }
 }
 
 function generateRandomPiece(squareDim){
@@ -171,8 +197,6 @@ function generatePiece(number, squareDim){
     return newPiece;
 }
 
-createjs.Ticker.setFPS(30);
-createjs.Ticker.addEventListener("tick", handleTick);
 function handleTick(event){
     scoreText.text = score.toString();
     stage.update();
