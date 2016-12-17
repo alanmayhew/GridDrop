@@ -121,8 +121,9 @@ function gridClick(event){
     var ny = nextPiece.y;
     stage.removeChild(nextPiece);
     nextPiece.x = col * squareDim;
-    nextPiece.y = (gridDim-row-1)*squareDim;
+    // nextPiece.y = (gridDim-row-1)*squareDim;
     piecesContainer.addChild(nextPiece);
+    gameState.animateFall(nextPiece, {y:(gridDim-row-1)*squareDim});
     nextPiece = null;
     var removed = 1;
     var mult = 1;

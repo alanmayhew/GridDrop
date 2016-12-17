@@ -115,10 +115,16 @@ Grid.prototype.updatePieceHeights = function(squareDim){
             if (cell.y != newY){
                 ++numFell;
             }
-            cell.y = newY;
+            // cell.y = newY;
+            // createjs.Tween.get(cell).to({y: newY}, 300, createjs.Ease.getElasticOut(20,50));
+            this.animateFall(cell, {y:newY});
         }
     }
     console.log("%d fell", numFell);
+}
+
+Grid.prototype.animateFall = function(piece, destObj){
+    createjs.Tween.get(piece).to(destObj, 300, createjs.Ease.getElasticOut(40, 100));
 }
 
 Grid.prototype.update = function(){
