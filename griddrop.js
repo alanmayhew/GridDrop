@@ -11,7 +11,7 @@ var interfaceContainer = null;
 var score = 0;
 var scoreText = null;
 var hueList = [];
-var clickLock = false;
+var clickLock = true;
 
 const TOPBAR_PERCENT = 0.15;
 
@@ -90,6 +90,7 @@ function init(gridDimIn){
     document.addEventListener("keydown", handleKeyDown);
     createjs.Ticker.setFPS(30);
     createjs.Ticker.addEventListener("tick", handleTick);
+    clickLock = false;
 }
 
 function canClick(){
@@ -129,30 +130,23 @@ function gridClick(event){
     piecesContainer.addChild(nextPiece);
     gameState.animateFall(nextPiece, {y:(gridDim-row-1)*squareDim}, 300);
     setTimeout(clearMatches, 300, 1);
-    // nextPiece = null;
-    // var removed = 1;
-    // var mult = 1;
-    // while (removed != 0){
-    //     removed = gameState.findAndRemoveGroups(piecesContainer);
-    //     score += removed * (mult++);
-    // }
-    // gameState.updatePieceHeights(squareDim);
     nextPiece = generateRandomPiece(squareDim);
     nextPiece.x = nx;
     nextPiece.y = ny;
     stage.addChild(nextPiece);
-    // clickLock = false;
 }
 
-/*
- * we're done if:
- *  - nothing was removed
- *  - something was removed but nothing fell
- *
- * if we're not done: (i.e. if something fell)
- *  - call a delayed version of this function again
- */
 function clearMatches(mult){
+    /*
+     * we're done if:
+     *  - nothing was removed
+     *
+     * if anything was removed:
+     *  - if anything fell:
+     *      - wait for falling animations, then call this fucntion again
+     *  - if nothing fell:
+     *      - just call this function again with no delay
+     */
     var removed = gameState.findAndRemoveGroups(piecesContainer);
     score += removed * (mult++);
     if (removed == 0){
@@ -160,13 +154,11 @@ function clearMatches(mult){
         return;
     }
     var fell = gameState.updatePieceHeights(gridSize/gridDim);
+    var delay = 300;
     if (fell == 0){
-        clickLock = false;
-        return;
-    } else {
-        // give the pieces time to fall, and then do this again
-        setTimeout(clearMatches, 300, mult);
+        delay = 0;
     }
+    setTimeout(clearMatches, delay, mult);
 }
 
 function handleKeyDown(event){
