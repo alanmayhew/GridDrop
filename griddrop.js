@@ -80,6 +80,7 @@ function init(gridDimIn){
     }
     gridLines.graphics.endStroke();
     nextPiece = generateRandomPiece(rectWidth);
+    // nextPiece = generateGrey(4, rectWidth);
     nextPiece.x = rectWidth * (gridDim - 1);
     nextPiece.y = 0;
     gridContainer.addChild(gridLines);
@@ -165,6 +166,34 @@ function handleKeyDown(event){
     var kc = event.keyCode;
 }
 
+function generateGrey(toughness, squareDim){
+    var piece = new createjs.Container();
+    piece.numberValue = -1 * toughness;
+    var baseCircle = new createjs.Shape();
+    var offset = squareDim / 2;
+    var radius = offset * 0.9;
+    var color = "#666";
+    baseCircle.graphics.beginFill(color).drawCircle(0, 0, radius).endFill();
+    baseCircle.x = offset;
+    baseCircle.y = offset;
+    piece.addChild(baseCircle);
+    if (toughness > 0){
+        var minR = 0.2 * radius;
+        var maxR = 0.85 * radius;
+        var dR = (maxR - minR) / toughness;
+        for (var i=0; i<toughness; ++i){
+            var circle = new createjs.Shape();
+            // var r = minR + i*dR;
+            var r = maxR - i*dR;
+            circle.graphics.setStrokeStyle(3).beginStroke("black").drawCircle(0, 0, r);
+            circle.x = offset;
+            circle.y = offset;
+            piece.addChild(circle);
+        }
+    }
+    return piece;
+}
+
 function generateRandomPiece(squareDim){
     randomPieceNumber = Math.floor(Math.random() * gridDim)+1;
     return generatePiece(randomPieceNumber, squareDim);
@@ -177,7 +206,10 @@ function generatePiece(number, squareDim){
     var offset = squareDim / 2;
     var radius = offset * 0.9;
     var color = "hsl(" + hueList[number-1].toString() + ", 100%, 50%)";
-    circle.graphics.beginFill(color).drawCircle(0, 0, radius).endFill();
+    // circle.graphics.beginFill(color).drawCircle(0, 0, radius).endFill();
+    var command = circle.graphics.beginFill(color).command;
+    circle.graphics.drawCircle(0, 0, radius).endFill();
+    newPiece.colorCommand = command;
     circle.x = offset;
     circle.y = offset;
     // TODO dynamic font size

@@ -120,7 +120,7 @@ Grid.prototype.updatePieceHeights = function(squareDim){
             this.animateFall(cell, {y:newY}, 300);
         }
     }
-    console.log("%d fell", numFell);
+    // console.log("%d fell", numFell);
     return numFell;
 }
 
