@@ -79,7 +79,7 @@ function init(gridDimIn){
         gridLines.graphics.moveTo(-0.5, xval).lineTo(rectHeight+0.5, xval);
     }
     gridLines.graphics.endStroke();
-    nextPiece = generateRandomPiece(rectWidth);
+    nextPiece = generateRandomPiece(rectWidth, 1, gridDim);
     // nextPiece = generateGrey(4, rectWidth);
     nextPiece.x = rectWidth * (gridDim - 1);
     nextPiece.y = 0;
@@ -131,7 +131,7 @@ function gridClick(event){
     piecesContainer.addChild(nextPiece);
     gameState.animateFall(nextPiece, {y:(gridDim-row-1)*squareDim}, 300);
     setTimeout(clearMatches, 300, 1);
-    nextPiece = generateRandomPiece(squareDim);
+    nextPiece = generateRandomPiece(squareDim, -1, 7);
     nextPiece.x = nx;
     nextPiece.y = ny;
     stage.addChild(nextPiece);
@@ -148,13 +148,14 @@ function clearMatches(mult){
      *  - if nothing fell:
      *      - just call this function again with no delay
      */
-    var removed = gameState.findAndRemoveGroups(piecesContainer);
+    var squareDim = gridSize/gridDim;
+    var removed = gameState.findAndRemoveGroups(piecesContainer, squareDim);
     score += removed * (mult++);
     if (removed == 0){
         clickLock = false;
         return;
     }
-    var fell = gameState.updatePieceHeights(gridSize/gridDim);
+    var fell = gameState.updatePieceHeights(squareDim);
     var delay = 300;
     if (fell == 0){
         delay = 0;
@@ -166,9 +167,22 @@ function handleKeyDown(event){
     var kc = event.keyCode;
 }
 
+function generateRandomPiece(squareDim, min, max){
+    randomPieceNumber = Math.floor(Math.random() * max)+min;
+    if (randomPieceNumber <= 0){
+        if (randomPieceNumber == 0) --randomPieceNumber;
+        return generateGrey(randomPieceNumber, squareDim);
+    }
+    return generatePiece(randomPieceNumber, squareDim);
+}
+
 function generateGrey(toughness, squareDim){
+    if (toughness > 0){
+        console.log("ERROR: GREY TOUGHNESS CANNOT BE POSITIVE");
+        return;
+    }
     var piece = new createjs.Container();
-    piece.numberValue = -1 * toughness;
+    piece.numberValue = toughness;
     var baseCircle = new createjs.Shape();
     var offset = squareDim / 2;
     var radius = offset * 0.9;
@@ -177,11 +191,16 @@ function generateGrey(toughness, squareDim){
     baseCircle.x = offset;
     baseCircle.y = offset;
     piece.addChild(baseCircle);
-    if (toughness > 0){
+    // var text = new createjs.Text(piece.numberValue.toString(),"40px Arial", "#fff");
+    // var b = text.getBounds();
+    // text.x = offset - b.width/2;
+    // text.y = offset - b.height/2;
+    // piece.addChild(text);
+    if (toughness < 0){
         var minR = 0.2 * radius;
         var maxR = 0.85 * radius;
         var dR = (maxR - minR) / toughness;
-        for (var i=0; i<toughness; ++i){
+        for (var i=0; i<-toughness; ++i){
             var circle = new createjs.Shape();
             // var r = minR + i*dR;
             var r = maxR - i*dR;
@@ -192,11 +211,6 @@ function generateGrey(toughness, squareDim){
         }
     }
     return piece;
-}
-
-function generateRandomPiece(squareDim){
-    randomPieceNumber = Math.floor(Math.random() * gridDim)+1;
-    return generatePiece(randomPieceNumber, squareDim);
 }
 
 function generatePiece(number, squareDim){

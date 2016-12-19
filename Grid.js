@@ -38,7 +38,7 @@ Grid.prototype.dropInColumn = function(col_num, piece){
 }
 
 // returns the number of groups removed
-Grid.prototype.findAndRemoveGroups = function(piecesContainer){
+Grid.prototype.findAndRemoveGroups = function(piecesContainer, squareDim){
     var numRemoved = 0;
     var matchingCells = [];
     var cell = null;
@@ -84,10 +84,9 @@ Grid.prototype.findAndRemoveGroups = function(piecesContainer){
             }
         }
     }
-    // to actually remove the cells, first we sort it in descending order with
-    // column taking priority over row (some div/mod shenanigans to make it
-    // easy) and then we can safely remove things from the column lists without
-    // causing issues with subsequent indices not pointing to the correct spot
+    // first, go through the matches and check their neighboring cells for
+    // greys that need to get hit (BUT DON'T REMOVE THE MATCHED PIECES
+    // YET BECAUSE IT CAN CAUSE WEIRD PROBLEMS)
     matchingCells.sort(function(a,b){return b-a});
     var prev = -1;
     for (var i=0; i<matchingCells.length; ++i){
@@ -97,6 +96,45 @@ Grid.prototype.findAndRemoveGroups = function(piecesContainer){
         var col = Math.floor(val/this.dim);
         var row = val % this.dim;
         cell = this.columns[col][row];
+        var neighbors = [val-1, val+1, val+this.dim, val-this.dim];
+        for (var j=0; j<4; ++j){
+            // debugger;
+            var neighbor = neighbors[j];
+            var ncol = Math.floor(neighbor/this.dim);
+            var nrow = neighbor % this.dim;
+            if (neighbor < 0 || neighbor >= this.dim * this.dim || (Math.abs(neighbor - val) > 1 && nrow != row)) continue;
+            var neighborCell = this.columns[ncol][nrow];
+            if (neighborCell == null) continue;
+            var replacement = null;
+            if (neighborCell.numberValue == 0){
+                // debugger;
+                replacement = generateRandomPiece(squareDim, 1, 7);
+                ++numRemoved;
+                console.log("grey destroyed by match of %d, replaced with %d", cell.numberValue, replacement.numberValue);
+            } else if (neighborCell.numberValue < 0){
+                // debugger;
+                replacement = generateGrey(neighborCell.numberValue+1, squareDim);
+                console.log("grey reduced by match of %d, new toughness value is %d", cell.numberValue, replacement.numberValue);
+            }
+            if (replacement != null){
+                piecesContainer.removeChild(neighborCell);
+                replacement.x = neighborCell.x;
+                replacement.y = neighborCell.y;
+                this.columns[ncol][nrow] = replacement;
+                piecesContainer.addChild(replacement);
+            }
+        }
+    }
+    // now we actually use splice to get rid of the matches
+    prev = -1;
+    for (var i=0; i<matchingCells.length; ++i){
+        var val = matchingCells[i];
+        if (val == prev) continue;
+        prev = val;
+        var col = Math.floor(val/this.dim);
+        var row = val % this.dim;
+        cell = this.columns[col][row];
+        // ================================================================================
         piecesContainer.removeChild(cell);
         this.columns[col].splice(row,1);
         ++numRemoved;
