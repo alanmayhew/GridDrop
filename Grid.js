@@ -39,6 +39,7 @@ Grid.prototype.dropInColumn = function(col_num, piece){
 
 // returns the number of groups removed
 Grid.prototype.findAndRemoveGroups = function(piecesContainer, squareDim){
+    console.log("find and remove groups");
     var numRemoved = 0;
     var matchingCells = [];
     var cell = null;
@@ -108,8 +109,7 @@ Grid.prototype.findAndRemoveGroups = function(piecesContainer, squareDim){
             var replacement = null;
             if (neighborCell.numberValue == 0){
                 // debugger;
-                replacement = generateRandomPiece(squareDim, 1, 7);
-                ++numRemoved;
+                replacement = generateRandomPiece(squareDim, 1, this.dim);
                 console.log("grey destroyed by match of %d, replaced with %d", cell.numberValue, replacement.numberValue);
             } else if (neighborCell.numberValue < 0){
                 // debugger;
@@ -117,10 +117,10 @@ Grid.prototype.findAndRemoveGroups = function(piecesContainer, squareDim){
                 console.log("grey reduced by match of %d, new toughness value is %d", cell.numberValue, replacement.numberValue);
             }
             if (replacement != null){
-                piecesContainer.removeChild(neighborCell);
                 replacement.x = neighborCell.x;
                 replacement.y = neighborCell.y;
                 this.columns[ncol][nrow] = replacement;
+                piecesContainer.removeChild(neighborCell);
                 piecesContainer.addChild(replacement);
             }
         }
@@ -134,7 +134,7 @@ Grid.prototype.findAndRemoveGroups = function(piecesContainer, squareDim){
         var col = Math.floor(val/this.dim);
         var row = val % this.dim;
         cell = this.columns[col][row];
-        // ================================================================================
+        console.log("%d popped at %d,%d", cell.numberValue, col, row);
         piecesContainer.removeChild(cell);
         this.columns[col].splice(row,1);
         ++numRemoved;
@@ -143,12 +143,12 @@ Grid.prototype.findAndRemoveGroups = function(piecesContainer, squareDim){
 }
 
 Grid.prototype.updatePieceHeights = function(squareDim){
+    console.log("update piece heights");
     var numFell = 0;
     for (var c=0; c<this.dim; ++c){
         var col = this.columns[c];
         for (var r=0; r<col.length; ++r){
             var cell = col[r];
-            // cell.y = squareDim * (this.dim - r - 1);
             var newY = squareDim * (this.dim - r - 1); 
             if (cell.y != newY){
                 ++numFell;
@@ -158,13 +158,9 @@ Grid.prototype.updatePieceHeights = function(squareDim){
             this.animateFall(cell, {y:newY}, 300);
         }
     }
-    // console.log("%d fell", numFell);
     return numFell;
 }
 
 Grid.prototype.animateFall = function(piece, destObj, time){
     createjs.Tween.get(piece).to(destObj, time, createjs.Ease.getElasticOut(40, 100));
-}
-
-Grid.prototype.update = function(){
 }

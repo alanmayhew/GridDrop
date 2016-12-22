@@ -115,6 +115,7 @@ function gridMouseOut(event){
 
 function gridClick(event){
     if (!canClick()) return;
+    console.log("dropping piece");
     clickLock = true;
     var col = event.target.col_id;
     var row = gameState.dropInColumn(col,nextPiece);
@@ -148,6 +149,7 @@ function clearMatches(mult){
      *  - if nothing fell:
      *      - just call this function again with no delay
      */
+    console.log("clearing matches (mult=%d)", mult);
     var squareDim = gridSize/gridDim;
     var removed = gameState.findAndRemoveGroups(piecesContainer, squareDim);
     score += removed * (mult++);
@@ -158,7 +160,7 @@ function clearMatches(mult){
     var fell = gameState.updatePieceHeights(squareDim);
     var delay = 300;
     if (fell == 0){
-        delay = 0;
+        delay = 10;
     }
     setTimeout(clearMatches, delay, mult);
 }
