@@ -5,6 +5,7 @@ stage.enableMouseOver(20);
 var gameState = null;
 var gridDim = -1;
 var gridSize = -1;
+var squareDim = -1;
 var nextPiece = null;
 var piecesContainer = null;
 var interfaceContainer = null;
@@ -12,12 +13,21 @@ var score = 0;
 var scoreText = null;
 var hueList = [];
 var clickLock = true;
+var level = -1;
+var moveCount = -1;
 
 const TOPBAR_PERCENT = 0.15;
+const MOVES_PER_LEVEL = 20;
+
+// TODO: move the grid drawing code and such to its own function
+//          (for the sake of responding to window resizes?)
 
 function init(gridDimIn){
+    piecesContainer = new createjs.Container();
     gridDim = gridDimIn;
-    gameState = new Grid(gridDim);
+    gameState = new Grid(gridDim, piecesContainer);
+    level = 1;
+    moveCount = 0;
 
     for (var i=0; i<gridDim;  ++i){
         hueList.push(Math.floor(360 / gridDim * i));
@@ -28,7 +38,8 @@ function init(gridDimIn){
     var gridOffset = canvasHeight * TOPBAR_PERCENT;
     gridSize = canvasHeight - gridOffset;
 
-    var rectWidth = gridSize / gridDim;
+    squareDim = gridSize / gridDim;
+    var rectWidth = squareDim;
     var rectHeight = gridSize;
 
     var interfaceContainer = new createjs.Container();
@@ -47,7 +58,6 @@ function init(gridDimIn){
     var gridContainer = new createjs.Container();
     gridContainer.x = 0;
     gridContainer.y = gridOffset;
-    piecesContainer = new createjs.Container();
     piecesContainer.x = 0;
     piecesContainer.y = gridOffset;
     var gridLines = new createjs.Shape();
@@ -123,7 +133,7 @@ function gridClick(event){
         clickLock = false;
         return;
     }
-    var squareDim = gridSize / gridDim;
+    ++moveCount;
     var nx = nextPiece.x;
     var ny = nextPiece.y;
     stage.removeChild(nextPiece);
@@ -150,11 +160,10 @@ function clearMatches(mult){
      *      - just call this function again with no delay
      */
     console.log("clearing matches (mult=%d)", mult);
-    var squareDim = gridSize/gridDim;
-    var removed = gameState.findAndRemoveGroups(piecesContainer, squareDim);
+    var removed = gameState.findAndRemoveGroups(squareDim);
     score += removed * (mult++);
     if (removed == 0){
-        clickLock = false;
+        checkAndAddRow();
         return;
     }
     var fell = gameState.updatePieceHeights(squareDim);
@@ -165,8 +174,32 @@ function clearMatches(mult){
     setTimeout(clearMatches, delay, mult);
 }
 
+// TODO: check somewhere if we need to add a row of greys
+
+function checkAndAddRow(){
+    var delay = 0;
+    if (moveCount % MOVES_PER_LEVEL == 0){
+        if ( !(gameState.topRowIsEmpty()) ){
+            // TODO: lose
+            unlockClick();
+            console.log("you lose");
+            return;
+        }
+        gameState.addGreyRow(squareDim);
+        delay = 300;
+    }
+    setTimeout(unlockClick, delay);
+}
+
+function unlockClick(){
+    clickLock = false;
+}
+
 function handleKeyDown(event){
     var kc = event.keyCode;
+    if (kc == 32){
+        gameState.addGreyRow(gridSize/gridDim);
+    }
 }
 
 function generateRandomPiece(squareDim, min, max){
@@ -193,11 +226,6 @@ function generateGrey(toughness, squareDim){
     baseCircle.x = offset;
     baseCircle.y = offset;
     piece.addChild(baseCircle);
-    // var text = new createjs.Text(piece.numberValue.toString(),"40px Arial", "#fff");
-    // var b = text.getBounds();
-    // text.x = offset - b.width/2;
-    // text.y = offset - b.height/2;
-    // piece.addChild(text);
     if (toughness < 0){
         var minR = 0.2 * radius;
         var maxR = 0.85 * radius;

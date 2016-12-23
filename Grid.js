@@ -20,9 +20,10 @@
 
  */
 
-function Grid(dim){
+function Grid(dim, cont){
     this.dim = dim;
     this.columns = [];
+    this.piecesContainer = cont;
     for (var i=0; i<dim; ++i){
         this.columns.push([]);
     }
@@ -38,7 +39,7 @@ Grid.prototype.dropInColumn = function(col_num, piece){
 }
 
 // returns the number of groups removed
-Grid.prototype.findAndRemoveGroups = function(piecesContainer, squareDim){
+Grid.prototype.findAndRemoveGroups = function(squareDim){
     console.log("find and remove groups");
     var numRemoved = 0;
     var matchingCells = [];
@@ -120,8 +121,8 @@ Grid.prototype.findAndRemoveGroups = function(piecesContainer, squareDim){
                 replacement.x = neighborCell.x;
                 replacement.y = neighborCell.y;
                 this.columns[ncol][nrow] = replacement;
-                piecesContainer.removeChild(neighborCell);
-                piecesContainer.addChild(replacement);
+                this.piecesContainer.removeChild(neighborCell);
+                this.piecesContainer.addChild(replacement);
             }
         }
     }
@@ -135,7 +136,7 @@ Grid.prototype.findAndRemoveGroups = function(piecesContainer, squareDim){
         var row = val % this.dim;
         cell = this.columns[col][row];
         console.log("%d popped at %d,%d", cell.numberValue, col, row);
-        piecesContainer.removeChild(cell);
+        this.piecesContainer.removeChild(cell);
         this.columns[col].splice(row,1);
         ++numRemoved;
     }
@@ -159,6 +160,31 @@ Grid.prototype.updatePieceHeights = function(squareDim){
         }
     }
     return numFell;
+}
+
+Grid.prototype.topRowIsEmpty = function(){
+    for (var i=0; i<this.dim; ++i){
+        if (this.columns[i].length >= this.dim-1){
+            return false;
+        }
+    }
+    return true;
+}
+
+Grid.prototype.addGreyRow = function(squareDim){
+    console.log(this);
+    for (var i=0; i<this.dim; ++i){
+        var newGrey = generateGrey(-1, squareDim);
+        newGrey.x = i*squareDim;
+        newGrey.y = squareDim * (this.dim - 1);
+        newGrey.alpha = 0;
+        this.piecesContainer.addChild(newGrey);
+        this.columns[i].splice(0, 0, newGrey);
+        this.animateFall(newGrey, {alpha:1}, 1000);
+    }
+    console.log(this);
+    this.updatePieceHeights(squareDim);
+    console.log(this);
 }
 
 Grid.prototype.animateFall = function(piece, destObj, time){
